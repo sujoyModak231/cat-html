@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel - Your Virtual Cat Companion</title>
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #7971ea;
+            --accent: #feca57;
+            --dark: #2d3436;
+            --light: #f9f9f9;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8ff, #e9ebff);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+        }
+
+        .greeting {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px var(--shadow);
+            animation: fadeInDown 1s ease;
+        }
+
+        .cat-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 2rem 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .cat-container:hover {
+            transform: scale(1.05);
+        }
+
+        .cat {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .cat-head {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background-color: #f39c12;
+            border-radius: 50%;
+            top: 60px;
+            left: 60px;
+            box-shadow: 0 10px 15px var(--shadow);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .cat-ear-left, .cat-ear-right {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 40px solid transparent;
+            border-right: 40px solid transparent;
+            border-bottom: 70px solid #f39c12;
+            transform-origin: bottom center;
+        }
+
+        .cat-ear-left {
+            top: 10px;
+            left: 30px;
+            transform: rotate(-30deg);
+        }
+
+        .cat-ear-right {
+            top: 10px;
+            right: 30px;
+            transform: rotate(30deg);
+        }
+
+        .cat-ear-inner-left, .cat-ear-inner-right {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #e67e22;
+            transform-origin: bottom center;
+        }
+
+        .cat-ear-inner-left {
+            top: 25px;
+            left: 50px;
+            transform: rotate(-30deg);
+        }
+
+        .cat-ear-inner-right {
+            top: 25px;
+            right: 50px;
+            transform: rotate(30deg);
+        }
+
+        .cat-eye-left, .cat-eye-right {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border-radius: 50%;
+            top: 90px;
+            z-index: 11;
+        }
+
+        .cat-eye-left {
+            left: 50px;
+        }
+
+        .cat-eye-right {
+            right: 50px;
+        }
+
+        .cat-pupil-left, .cat-pupil-right {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .cat-pupil-left {
+            left: 10px;
+        }
+
+        .cat-pupil-right {
+            left: 10px;
+        }
+
+        .cat-nose {
+            position: absolute;
+            width: 25px;
+            height: 15px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            top: 120px;
+            left: 77.5px;
+            z-index: 12;
+        }
+
+        .cat-mouth {
+            position: absolute;
+            width: 80px;
+            height: 15px;
+            border-radius: 0 0 40px 40px;
+            border-bottom: 3px solid #2c3e50;
+            top: 140px;
+            left: 50px;
+            z-index: 12;
+            transition: all 0.3s ease;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -100px;
+            left: 150px;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px var(--shadow);
+            max-width: 250px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+        }
+
+        .speech-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cat-body {
+            position: absolute;
+            width: 200px;
+            height: 120px;
+            background-color: #f39c12;
+            border-radius: 100px 100px 0 0;
+            bottom: 0;
+            left: 50px;
+            z-index: 9;
+        }
+
+        .action-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+            animation: fadeInUp 1s ease;
+        }
+
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px var(--shadow);
+            outline: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px var(--shadow);
+            background-color: #6c63dd;
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: #ff5252;
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: var(--dark);
+        }
+
+        .btn-accent:hover {
+            background-color: #ffbb33;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 2rem;
+            animation: fadeIn 1.5s ease;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            width: 60px;
+            height: 10px;
+            background-color: #dfe6e9;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            width: 100%;
+            background-color: var(--secondary);
+            transition: width 0.5s ease;
+        }
+
+        .mood-emoji {
+            font-size: 2rem;
+            margin-top: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes blink {
+            0%, 100% { transform: scaleY(1); }
+            45%, 55% { transform: scaleY(0.1); }
+        }
+
+        @keyframes tailWag {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .greeting {
+                font-size: 2rem;
+            }
+
+            .cat-container {
+                width: 250px;
+                height: 250px;
+            }
+
+            .cat-head {
+                width: 150px;
+                height: 150px;
+                top: 50px;
+                left: 50px;
+            }
+
+            .cat-body {
+                width: 170px;
+                height: 100px;
+                left: 40px;
+            }
+
+            .cat-ear-left {
+                left: 25px;
+            }
+
+            .cat-ear-right {
+                right: 25px;
+            }
+
+            .cat-eye-left {
+                left: 40px;
+                top: 80px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .cat-eye-right {
+                right: 40px;
+                top: 80px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .cat-pupil-left, .cat-pupil-right {
+                width: 18px;
+                height: 18px;
+                top: 8px;
+                left: 8px;
+            }
+
+            .cat-nose {
+                top: 110px;
+                left: 62.5px;
+                width: 22px;
+                height: 12px;
+            }
+
+            .cat-mouth {
+                top: 125px;
+                left: 45px;
+                width: 60px;
+            }
+
+            .action-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 250px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .greeting {
+                font-size: 1.5rem;
+            }
+
+            .cat-container {
+                width: 200px;
+                height: 200px;
+            }
+
+            .cat-head {
+                width: 120px;
+                height: 120px;
+                top: 40px;
+                left: 40px;
+            }
+
+            .cat-body {
+                width: 140px;
+                height: 80px;
+                left: 30px;
+            }
+
+            .cat-ear-left, .cat-ear-right {
+                border-left: 30px solid transparent;
+                border-right: 30px solid transparent;
+                border-bottom: 50px solid #f39c12;
+            }
+
+            .cat-ear-inner-left, .cat-ear-inner-right {
+                border-left: 15px solid transparent;
+                border-right: 15px solid transparent;
+                border-bottom: 30px solid #e67e22;
+            }
+
+            .cat-ear-inner-left {
+                top: 20px;
+                left: 40px;
+            }
+
+            .cat-ear-inner-right {
+                top: 20px;
+                right: 40px;
+            }
+
+            .cat-eye-left, .cat-eye-right {
+                width: 30px;
+                height: 30px;
+                top: 65px;
+            }
+
+            .cat-eye-left {
+                left: 30px;
+            }
+
+            .cat-eye-right {
+                right: 30px;
+            }
+
+            .cat-pupil-left, .cat-pupil-right {
+                width: 15px;
+                height: 15px;
+                top: 7px;
+                left: 7px;
+            }
+
+            .cat-nose {
+                top: 90px;
+                left: 50px;
+                width: 20px;
+                height: 10px;
+            }
+
+            .cat-mouth {
+                top: 105px;
+                left: 35px;
+                width: 50px;
+            }
+
+            .speech-bubble {
+                left: 120px;
+                max-width: 180px;
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Food animation */
+        .food {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #fdcb6e;
+            border-radius: 5px;
+            z-index: 15;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .food.visible {
+            opacity: 1;
+        }
+
+        /* Toy animation */
+        .toy {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            z-index: 15;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .toy.visible {
+            opacity: 1;
+            animation: toyBounce 1s infinite alternate;
+        }
+
+        @keyframes toyBounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-20px); }
+        }
+
+        /* Setting panel */
+        .settings-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+        }
+
+        .settings-btn {
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            transform: rotate(30deg);
+        }
+
+        .settings-content {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px var(--shadow);
+            width: 250px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .settings-content.visible {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        .volume-control {
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        /* Name Input Dialog */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Changed from flex to none */
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .dialog {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .dialog h2 {
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .dialog input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 2px solid #dfe6e9;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .dialog input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .dialog-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dialog-btn:hover {
+            background-color: #6c63dd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="greeting">Hi, I'm Pixel! 😺</h1>
+        
+        <div class="cat-container" id="catContainer">
+            <div class="cat" id="cat">
+                <div class="cat-body"></div>
+                <div class="cat-head">
+                    <div class="cat-ear-left"></div>
+                    <div class="cat-ear-inner-left"></div>
+                    <div class="cat-ear-right"></div>
+                    <div class="cat-ear-inner-right"></div>
+                    <div class="cat-eye-left">
+                        <div class="cat-pupil-left"></div>
+                    </div>
+                    <div class="cat-eye-right">
+                        <div class="cat-pupil-right"></div>
+                    </div>
+                    <div class="cat-nose"></div>
+                    <div class="cat-mouth"></div>
+                </div>
+                <div class="speech-bubble" id="speechBubble">Hello there!</div>
+            </div>
+            <div class="food" id="food"></div>
+            <div class="toy" id="toy"></div>
+        </div>
+        
+        <div class="mood-emoji" id="moodEmoji">😺</div>
+        
+        <div class="stats-container">
+            <div class="stat">
+                <div>Happiness</div>
+                <div class="stat-value">
+                    <div class="stat-fill" id="happinessStat" style="width: 80%;"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div>Hunger</div>
+                <div class="stat-value">
+                    <div class="stat-fill" id="hungerStat" style="width: 60%;"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div>Energy</div>
+                <div class="stat-value">
+                    <div class="stat-fill" id="energyStat" style="width: 90%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-panel">
+            <button class="btn btn-primary" id="petBtn">Pet Pixel</button>
+            <button class="btn" id="feedBtn">Feed</button>
+            <button class="btn btn-accent" id="playBtn">Play</button>
+            <button class="btn" id="jokeBtn">Tell a Joke</button>
+            <button class="btn btn-primary" id="complimentBtn">Get Compliment</button>
+        </div>
+    </div>
+    
+    <div class="settings-panel">
+        <button class="settings-btn" id="settingsBtn">
+            ⚙️
+        </button>
+        <div class="settings-content" id="settingsContent">
+            <h3>Settings</h3>
+            <div>
+                <label for="volumeControl">Volume:</label>
+                <input type="range" id="volumeControl" class="volume-control" min="0" max="100" value="80">
+            </div>
+            <div style="margin-top: 1rem;">
+                <button class="btn" id="changeNameBtn" style="width: 100%;">Change Your Name</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="nameDialog">
+        <div class="dialog">
+            <h2>What's your name?</h2>
+            <input type="text" id="nameInput" placeholder="Enter your name" value="Himani">
+            <button class="dialog-btn" id="saveNameBtn">Save</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const petBtn = document.getElementById("petBtn");
+            const feedBtn = document.getElementById("feedBtn");
+            const playBtn = document.getElementById("playBtn");
+            const jokeBtn = document.getElementById("jokeBtn");
+            const complimentBtn = document.getElementById("complimentBtn");
+            const speechBubble = document.getElementById("speechBubble");
+            const moodEmoji = document.getElementById("moodEmoji");
+            const happinessStat = document.getElementById("happinessStat");
+            const hungerStat = document.getElementById("hungerStat");
+            const energyStat = document.getElementById("energyStat");
+            const nameDialog = document.getElementById("nameDialog");
+            const nameInput = document.getElementById("nameInput");
+            const saveNameBtn = document.getElementById("saveNameBtn");
+            const changeNameBtn = document.getElementById("changeNameBtn");
+            const settingsBtn = document.getElementById("settingsBtn");
+            const settingsContent = document.getElementById("settingsContent");
+            const volumeControl = document.getElementById("volumeControl");
+        
+            let happiness = 80;
+            let hunger = 60;
+            let energy = 90;
+            let username = nameInput.value || "Himani";
+        
+            const updateStats = () => {
+                happinessStat.style.width = `${happiness}%`;
+                hungerStat.style.width = `${hunger}%`;
+                energyStat.style.width = `${energy}%`;
+                updateMood();
+            };
+        
+            const updateMood = () => {
+                if (happiness > 70 && hunger < 50) {
+                    moodEmoji.textContent = "😺";
+                } else if (hunger > 80) {
+                    moodEmoji.textContent = "😿";
+                } else if (energy < 30) {
+                    moodEmoji.textContent = "😴";
+                } else {
+                    moodEmoji.textContent = "😐";
+                }
+            };
+        
+            const showSpeech = (message) => {
+                speechBubble.textContent = message;
+                speechBubble.style.opacity = 1;
+                setTimeout(() => {
+                    speechBubble.style.opacity = 0;
+                }, 2000);
+            };
+        
+            petBtn.addEventListener("click", () => {
+                happiness = Math.min(happiness + 10, 100);
+                showSpeech(`I love pets! Thanks, ${username}! 😻`);
+                updateStats();
+            });
+        
+            feedBtn.addEventListener("click", () => {
+                hunger = Math.max(hunger - 20, 0);
+                showSpeech("Yummy! That was delicious! 🍖");
+                updateStats();
+            });
+        
+            playBtn.addEventListener("click", () => {
+                if (energy > 20) {
+                    happiness = Math.min(happiness + 15, 100);
+                    energy = Math.max(energy - 20, 0);
+                    showSpeech("Woohoo! Playing is fun! 🏀");
+                } else {
+                    showSpeech("I'm too tired to play... 😴");
+                }
+                updateStats();
+            });
+        
+            jokeBtn.addEventListener("click", () => {
+                const jokes = [
+                    "Why don’t cats play poker in the wild? Too many cheetahs! 🃏",
+                    "What do you call a pile of kittens? A meowtain! ⛰️",
+                    "Why was the cat sitting on the computer? To keep an eye on the mouse! 🖱️"
+                ];
+                showSpeech(jokes[Math.floor(Math.random() * jokes.length)]);
+            });
+        
+            complimentBtn.addEventListener("click", () => {
+                const compliments = [
+                    "You're amazing! 😻",
+                    "You're the best human ever! ❤️",
+                    "You're so kind and wonderful! 😸"
+                ];
+                showSpeech(compliments[Math.floor(Math.random() * compliments.length)]);
+            });
+        
+            changeNameBtn.addEventListener("click", () => {
+                nameDialog.style.display = "flex";
+            });
+        
+            saveNameBtn.addEventListener("click", () => {
+                username = nameInput.value || "Himani";
+                nameDialog.style.display = "none";
+            });
+        
+            settingsBtn.addEventListener("click", () => {
+                settingsContent.classList.toggle("active");
+            });
+        
+            volumeControl.addEventListener("input", () => {
+                showSpeech(`Volume set to ${volumeControl.value}% 🎵`);
+            });
+        
+            updateStats();
+        
+            setInterval(() => {
+                hunger = Math.min(hunger + 5, 100);
+                energy = Math.max(energy - 5, 0);
+                happiness = Math.max(happiness - 2, 0);
+                updateStats();
+            }, 5000);
+        });
+        </script>
+        
